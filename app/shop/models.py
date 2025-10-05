@@ -1,5 +1,7 @@
 from django.db import models
-
+from django.utils import timezone
+from django.db.models import Sum, F
+from datetime import timedelta
 
 class Product(models.Model):
     name = models.CharField(
