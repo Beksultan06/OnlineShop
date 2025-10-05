@@ -17,7 +17,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = ["*"] if DEBUG else ["mybackend.com"]  # продакшен домен
+ALLOWED_HOSTS = ["*"] if DEBUG else ["mybackend.com"] 
+TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID") 
 
 # ------------------- Приложения -------------------
 
