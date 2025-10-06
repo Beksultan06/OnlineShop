@@ -1,13 +1,8 @@
-from django.urls import path
-
 from rest_framework.routers import DefaultRouter
-from app.shop.views import ProductViewSet, ReviewsListCreateAPIView
+from app.shop.views import ProductViewSet, ReviewsViewSet
 
 router = DefaultRouter()
-router.register(r'product',ProductViewSet, basename='product-list')
+router.register(r'product', ProductViewSet, basename='product')
+router.register(r'reviews', ReviewsViewSet, basename='reviews')
 
-urlpatterns = [
-    path("reviews/", ReviewsListCreateAPIView.as_view(), name="reviews-list-create"),
-]
-
-urlpatterns += router.urls
+urlpatterns = router.urls

@@ -2,14 +2,48 @@ from django.db import models
 from django.utils import timezone
 from django.db.models import Sum, F
 from datetime import timedelta
+from ckeditor.fields import RichTextField
+
+
+RATING_CHOICES = [
+        (1, "★☆☆☆☆ (1)"),
+        (2, "★★☆☆☆ (2)"),
+        (3, "★★★☆☆ (3)"),
+        (4, "★★★★☆ (4)"),
+        (5, "★★★★★ (5)"),
+    ]
+
+class Category(models.Model):
+    name = models.CharField(
+        max_length=155,
+        verbose_name='Категория'
+    )
+    is_active = models.BooleanField(
+        default=False,
+        verbose_name='В наличий'
+    )
+    
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+    
 
 class Product(models.Model):
+    category = models.ForeignKey(
+        Category,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Категория',
+        related_name='categories'
+    )
     name = models.CharField(
         max_length=255,
         verbose_name="Название товара"
     )
-    description = models.TextField(
-        blank=True,
+    description = RichTextField(
         verbose_name="Описание"
     )
     price = models.DecimalField(
@@ -20,6 +54,15 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(
         default=0,
         verbose_name="Количество на складе"
+    )
+    rating = models.PositiveSmallIntegerField(
+        choices=RATING_CHOICES,
+        default=5,
+        verbose_name="Оценка (1–5)"
+    )
+    is_favorites = models.BooleanField(
+        default=False,
+        verbose_name='В ИЗБРАННОЕ'
     )
 
     class Meta:
@@ -51,14 +94,6 @@ class ProductImage(models.Model):
         return f"Изображение для {self.product.name}"
 
 class Reviews(models.Model):
-    RATING_CHOICES = [
-        (1, "★☆☆☆☆ (1)"),
-        (2, "★★☆☆☆ (2)"),
-        (3, "★★★☆☆ (3)"),
-        (4, "★★★★☆ (4)"),
-        (5, "★★★★★ (5)"),
-    ]
-
     title = models.CharField(
         max_length=155,
         verbose_name="Заголовок"
@@ -127,7 +162,6 @@ class Report(models.Model):
 
     @classmethod
     def generate_reports(cls):
-        """Создаёт дневной, недельный и месячный отчёты"""
         from .models import Order
 
         now = timezone.now()

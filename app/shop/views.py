@@ -1,14 +1,12 @@
+from rest_framework import viewsets, filters
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from django.core.cache import cache
 
-
-from rest_framework import viewsets
 from app.shop.models import Product, Reviews
 from app.shop.serializers import ProductSerializer, ReviewsSerializer
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
 from app.shop.filters import ProductFilter
-from django.core.cache import cache
-from rest_framework.response import Response
-from rest_framework import generics
+
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -16,14 +14,13 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ProductFilter
-    search_fields = ['name', 'description']
-    ordering_fields = ['price', 'created_at']
+    search_fields = ["name", "description"]
+    ordering_fields = ["price", "created_at"]
 
-    # Переопределяем list() — список товаров
     def list(self, request, *args, **kwargs):
         cache_key = "products_list"
-
         products = cache.get(cache_key)
+
         if not products:
             queryset = self.filter_queryset(self.get_queryset())
             serializer = self.get_serializer(queryset, many=True)
@@ -32,7 +29,6 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         return Response(products)
 
-    # При изменениях очищаем кеш
     def perform_create(self, serializer):
         product = serializer.save()
         cache.delete("products_list")
@@ -47,12 +43,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         instance.delete()
         cache.delete("products_list")
 
-class ReviewsListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Reviews.objects.filter(is_active=True)
+
+class ReviewsViewSet(viewsets.ModelViewSet):
+    queryset = Reviews.objects.all()
     serializer_class = ReviewsSerializer
 
     def get_queryset(self):
-        # при GET возвращаем только активные отзывы
+        queryset = super().get_queryset()
         if self.request.method == "GET":
-            return Reviews.objects.filter(is_active=True)
-        return Reviews.objects.all()
+            queryset = queryset.filter(is_active=True)
+        return queryset

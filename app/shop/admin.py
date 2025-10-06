@@ -1,9 +1,11 @@
 from django.contrib import admin
-from app.shop.models import Product, Order, ProductImage, Reviews, Report
+from app.shop.models import Product, Order, ProductImage, Reviews, Report, Category
 from django.utils.html import format_html
 from django.db.models import Sum, Count
 from datetime import timedelta, datetime
 from django.utils import timezone
+
+admin.site.register(Category)
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
@@ -24,7 +26,7 @@ class ProductAdmin(admin.ModelAdmin):
     ordering = ("id",)
     fieldsets = (
         ("Основная информация", {
-            "fields": ("name", "description")
+            "fields": ("name", "description", 'category', 'rating', 'is_favorites')
         }),
         ("Цены и наличие", {
             "fields": ("price", "stock")
