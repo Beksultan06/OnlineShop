@@ -15,10 +15,18 @@ class ProductImageSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, required=False)
     category = CategorySerializers(read_only=True)
+    is_favorites = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ["id", "name", "description", "price", "stock", "images", 'rating', 'is_favorites', 'category']
+        fields = ["id", "name", "description", "price", "stock", "images", "rating", "is_favorites", "category"]
+
+    def get_is_favorites(self, obj):
+        request = self.context.get("request")
+        if request:
+            favorites = request.session.get("favorites", [])
+            return obj.id in favorites
+        return False
 
     def create(self, validated_data):
         images_data = validated_data.pop("images", [])
@@ -28,6 +36,7 @@ class ProductSerializer(serializers.ModelSerializer):
             ProductImage.objects.create(product=product, **image_data)
 
         return product
+
 
 
 class ReviewsSerializer(serializers.ModelSerializer):

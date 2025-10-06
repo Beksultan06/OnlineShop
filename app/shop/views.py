@@ -2,6 +2,8 @@ from rest_framework import viewsets, filters
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.cache import cache
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from app.shop.models import Product, Reviews
 from app.shop.serializers import ProductSerializer, ReviewsSerializer
@@ -53,3 +55,27 @@ class ReviewsViewSet(viewsets.ModelViewSet):
         if self.request.method == "GET":
             queryset = queryset.filter(is_active=True)
         return queryset
+
+class FavoriteProductViewSet(viewsets.ViewSet):
+    @action(detail=True, methods=["post"])
+    def toggle(self, request, pk=None):
+        favorites = request.session.get("favorites", [])
+
+        if int(pk) in favorites:
+            favorites.remove(int(pk))
+            is_favorite = False
+        else:
+            favorites.append(int(pk))
+            is_favorite = True
+
+        request.session["favorites"] = favorites
+        request.session.modified = True
+
+        return Response({"product_id": pk, "is_favorite": is_favorite})
+
+    @action(detail=False, methods=["get"])
+    def list(self, request):
+        favorites_ids = request.session.get("favorites", [])
+        queryset = Product.objects.filter(id__in=favorites_ids)
+        serializer = ProductSerializer(queryset, many=True, context={"request": request})
+        return Response(serializer.data)
