@@ -79,3 +79,49 @@ class FavoriteProductViewSet(viewsets.ViewSet):
         queryset = Product.objects.filter(id__in=favorites_ids)
         serializer = ProductSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
+
+
+class CartViewSet(viewsets.ViewSet):
+    @action(detail=True, methods=["post"])
+    def add(self, request, pk=None):
+        cart = request.session.get("cart", {})
+        product = Product.objects.get(pk=pk)
+
+        if str(pk) in cart:
+            cart[str(pk)]["quantity"] += 1
+        else:
+            cart[str(pk)] = {
+                "name": product.name,
+                "price": float(product.price),
+                "quantity": 1
+            }
+
+        request.session["cart"] = cart
+        request.session.modified = True
+        return Response(cart)
+
+    @action(detail=True, methods=["post"])
+    def remove(self, request, pk=None):
+        cart = request.session.get("cart", {})
+        if str(pk) in cart:
+            del cart[str(pk)]
+            request.session["cart"] = cart
+            request.session.modified = True
+        return Response(cart)
+
+    @action(detail=True, methods=["post"])
+    def decrement(self, request, pk=None):
+        cart = request.session.get("cart", {})
+        if str(pk) in cart:
+            if cart[str(pk)]["quantity"] > 1:
+                cart[str(pk)]["quantity"] -= 1
+            else:
+                del cart[str(pk)]
+            request.session["cart"] = cart
+            request.session.modified = True
+        return Response(cart)
+
+    @action(detail=False, methods=["get"])
+    def list(self, request):
+        cart = request.session.get("cart", {})
+        return Response(cart)

@@ -34,7 +34,6 @@ class ProductSerializer(serializers.ModelSerializer):
 
         for image_data in images_data[:10]:
             ProductImage.objects.create(product=product, **image_data)
-
         return product
 
 
