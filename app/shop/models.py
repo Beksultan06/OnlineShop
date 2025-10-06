@@ -50,31 +50,6 @@ class ProductImage(models.Model):
     def __str__(self):
         return f"Изображение для {self.product.name}"
 
-
-class Order(models.Model):
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        verbose_name="Товар"
-    )
-    quantity = models.PositiveIntegerField(
-        default=1,
-        verbose_name="Количество"
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Дата создания"
-    )
-
-    class Meta:
-        verbose_name = "Заказ"
-        verbose_name_plural = "Заказы"
-        ordering = ["-created_at"]
-
-    def __str__(self):
-        return f"Заказ №{self.id}"
-
-
 class Reviews(models.Model):
     RATING_CHOICES = [
         (1, "★☆☆☆☆ (1)"),
