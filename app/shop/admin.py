@@ -1,5 +1,5 @@
 from django.contrib import admin
-from app.shop.models import Product, Order, ProductImage, Reviews, Report, Category, CheckoutOrder, CheckoutItem
+from app.shop.models import Product, Order, ProductImage, Reviews, Report, Category, CheckoutOrder, CheckoutItem, Visit
 from django.utils.html import format_html
 from django.db.models import Sum, Count
 from datetime import timedelta, datetime
@@ -96,3 +96,5 @@ class CheckoutOrderAdmin(admin.ModelAdmin):
         "delivery_eta_hours", "preferred_time", "delivery_datetime", "delivery_note", "created_at"
     )
     inlines = [CheckoutItemInline]
+
+admin.site.register(Visit)

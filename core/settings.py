@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"] if DEBUG else ["mybackend.com"] 
 TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -46,6 +46,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django.middleware.locale.LocaleMiddleware",
+    "app.analytics.middleware.VisitMiddleware",
 ]
 
 ROOT_URLCONF = 'core.urls'

@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.db.models import Sum, F
 from datetime import timedelta
 from ckeditor.fields import RichTextField
-
+import uuid
 
 RATING_CHOICES = [
         (1, "★☆☆☆☆ (1)"),
@@ -276,3 +276,17 @@ class CheckoutItem(models.Model):
 
     def __str__(self):
         return f"{self.product} x {self.quantity}"
+
+class Visit(models.Model):
+    visitor_id = models.CharField(max_length=64, db_index=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    started_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "Посещение"
+        verbose_name_plural = "Посещения"
+        ordering = ["-started_at"]
+
+    def __str__(self):
+        return f"{self.visitor_id} ({self.ip}) - {self.started_at:%Y-%m-%d %H:%M}"
