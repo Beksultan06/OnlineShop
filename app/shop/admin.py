@@ -1,5 +1,5 @@
 from django.contrib import admin
-from app.shop.models import Product, Order, ProductImage, Reviews, Report, Category
+from app.shop.models import Product, Order, ProductImage, Reviews, Report, Category, CheckoutOrder, CheckoutItem
 from django.utils.html import format_html
 from django.db.models import Sum, Count
 from datetime import timedelta, datetime
@@ -9,8 +9,8 @@ admin.site.register(Category)
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
-    extra = 1  # сколько пустых полей показывать
-    max_num = 10  # максимум 10 фото
+    extra = 1  
+    max_num = 10  
     fields = ("image",)
     verbose_name = "Фото товара"
     verbose_name_plural = "Фотографии товара"
@@ -73,10 +73,26 @@ class ReportAdmin(admin.ModelAdmin):
     readonly_fields = ("report_type", "total_orders", "total_revenue", "created_at")
 
     def has_add_permission(self, request):
-        return False  # запрет добавления вручную
+        return False
 
     def has_change_permission(self, request, obj=None):
-        return False  # запрет изменения
+        return False
 
     def has_delete_permission(self, request, obj=None):
-        return False  # запрет удаления
+        return False  
+
+class CheckoutItemInline(admin.TabularInline):
+    model = CheckoutItem
+    extra = 0
+    readonly_fields = ("product", "quantity", "price", "line_total")
+
+@admin.register(CheckoutOrder)
+class CheckoutOrderAdmin(admin.ModelAdmin):
+    list_display = ("id", "first_name", "phone", "delivery_type", "total", "delivery_datetime", "created_at")
+    list_filter = ("delivery_type", "created_at")
+    search_fields = ("first_name", "last_name", "email", "phone", "city", "address")
+    readonly_fields = (
+        "shipping_cost", "subtotal", "total",
+        "delivery_eta_hours", "preferred_time", "delivery_datetime", "delivery_note", "created_at"
+    )
+    inlines = [CheckoutItemInline]

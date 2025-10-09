@@ -222,3 +222,57 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Заказ №{self.id} - {self.product.name}"
+
+
+class CheckoutOrder(models.Model):
+    DELIVERY_STANDARD = "standard"
+    DELIVERY_EXPRESS = "express"
+    DELIVERY_CHOICES = (
+        (DELIVERY_STANDARD, "Обычная доставка"),
+        (DELIVERY_EXPRESS, "Быстрая доставка"),
+    )
+    first_name = models.CharField("Имя", max_length=100)
+    last_name = models.CharField("Фамилия", max_length=100, blank=True)
+    email = models.EmailField("Email")
+    phone = models.CharField("Телефон", max_length=20)
+    delivery_type = models.CharField(
+        "Способ доставки", max_length=20, choices=DELIVERY_CHOICES
+    )
+    country = models.CharField("Страна", max_length=100)
+    city = models.CharField("Город", max_length=100)
+    address = models.CharField("Адрес", max_length=255)
+    postcode = models.CharField("Индекс", max_length=20, blank=True)
+    note = models.TextField("Примечание", blank=True)
+    shipping_cost = models.DecimalField("Стоимость доставки", max_digits=10, decimal_places=2, default=0)
+    subtotal = models.DecimalField("Сумма товаров", max_digits=12, decimal_places=2, default=0)
+    total = models.DecimalField("Итого", max_digits=12, decimal_places=2, default=0)
+    delivery_eta_hours = models.PositiveIntegerField("Минимальный срок, ч", default=24)
+    preferred_time = models.TimeField("Желаемое время доставки", null=True, blank=True)  # HH:MM
+    delivery_datetime = models.DateTimeField("Назначено на", null=True, blank=True)
+    delivery_note = models.CharField("Примечание по доставке", max_length=255, blank=True)
+    created_at = models.DateTimeField("Создан", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Оформленный заказ"
+        verbose_name_plural = "Оформленные заказы"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Заказ #{self.id} — {self.first_name} {self.last_name}".strip()
+
+
+class CheckoutItem(models.Model):
+    order = models.ForeignKey(
+        CheckoutOrder, on_delete=models.CASCADE, related_name="items", verbose_name="Заказ"
+    )
+    product = models.ForeignKey("shop.Product", on_delete=models.PROTECT, verbose_name="Товар")
+    quantity = models.PositiveIntegerField("Количество", default=1)
+    price = models.DecimalField("Цена", max_digits=10, decimal_places=2)
+    line_total = models.DecimalField("Сумма строки", max_digits=12, decimal_places=2)
+
+    class Meta:
+        verbose_name = "Позиция заказа"
+        verbose_name_plural = "Позиции заказа"
+
+    def __str__(self):
+        return f"{self.product} x {self.quantity}"
