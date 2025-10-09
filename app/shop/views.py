@@ -4,14 +4,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.core.cache import cache
 from rest_framework.decorators import action
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, mixins
 from datetime import time
 from datetime import time as dt_time
 from decimal import Decimal
 from django.utils import timezone
 
-from app.shop.models import Product, Reviews
-from app.shop.serializers import ProductSerializer, ReviewsSerializer, CheckoutCreateSerializer
+from app.shop.models import Product, Reviews, Contact
+from app.shop.serializers import ProductSerializer, ReviewsSerializer, CheckoutCreateSerializer, ContactSerializers
 from app.shop.filters import ProductFilter
 
 
@@ -229,3 +229,8 @@ class CheckoutView(APIView):
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
         return Response(CheckoutOrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
+class ContactAPI(viewsets.GenericViewSet,
+                    mixins.CreateModelMixin):
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializers

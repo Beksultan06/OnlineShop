@@ -1,11 +1,12 @@
 from django.contrib import admin
-from app.shop.models import Product, Order, ProductImage, Reviews, Report, Category, CheckoutOrder, CheckoutItem, Visit
+from app.shop.models import Product, Order, ProductImage, Reviews, Report, Category, CheckoutOrder, CheckoutItem, Visit, Contact
 from django.utils.html import format_html
 from django.db.models import Sum, Count
 from datetime import timedelta, datetime
 from django.utils import timezone
 
 admin.site.register(Category)
+admin.site.register(Contact)
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage

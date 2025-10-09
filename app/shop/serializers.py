@@ -1,10 +1,15 @@
 from rest_framework import serializers
-from app.shop.models import Product, Order, ProductImage, Reviews, Category, CheckoutOrder, CheckoutItem
+from app.shop.models import Product, Order, ProductImage, Reviews, Category, CheckoutOrder, CheckoutItem, Contact
 from decimal import Decimal
 from datetime import timedelta, time as dt_time   
 from django.utils import timezone
 from django.db import transaction
 from app.shop.utils import send_telegram_message
+
+class ContactSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = '__all__'
 
 class CategorySerializers(serializers.ModelSerializer):
     class Meta:

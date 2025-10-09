@@ -290,3 +290,31 @@ class Visit(models.Model):
 
     def __str__(self):
         return f"{self.visitor_id} ({self.ip}) - {self.started_at:%Y-%m-%d %H:%M}"
+
+class Contact(models.Model):
+    name = models.CharField(
+        max_length=155,
+        verbose_name='Имя'
+    )
+    fio_name = models.CharField(
+        max_length=155,
+        verbose_name='ФИО'
+    )
+    phone_number = models.CharField(
+        max_length=155,
+        verbose_name='Номер телефона'
+    )
+    email = models.CharField(
+        max_length=155,
+        verbose_name='Почта'
+    )
+    text = models.TextField(
+        verbose_name='Текст'
+    )
+
+    def __str__(self):
+        return self.name
+        
+    class Meta:
+        verbose_name = 'Наши контакты'
+        verbose_name_plural = 'Наши контакты'    
