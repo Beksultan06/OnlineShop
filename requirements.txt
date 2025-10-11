@@ -10,8 +10,10 @@ click==8.3.0
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
 click-repl==0.3.0
+cron_descriptor==2.0.6
 Django==5.2.7
 django-allauth==65.11.2
+django-celery-beat==2.8.1
 django-ckeditor==6.7.3
 django-cors-headers==4.9.0
 django-filter==25.1
@@ -19,8 +21,10 @@ django-jazzmin==3.0.1
 django-js-asset==3.1.2
 django-modeltranslation==0.19.17
 django-redis==6.0.0
+django-timezone-field==7.1
 djangorestframework==3.16.1
 drf-yasg==1.21.11
+gunicorn==23.0.0
 idna==3.10
 inflection==0.5.1
 kombu==5.5.4
@@ -29,6 +33,7 @@ pillow==11.3.0
 prompt_toolkit==3.0.52
 pydantic==2.11.9
 pydantic_core==2.33.2
+python-crontab==3.3.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 python-filter==2.1.0

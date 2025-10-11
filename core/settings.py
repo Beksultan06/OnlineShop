@@ -2,7 +2,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -10,9 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"] if DEBUG else ["mybackend.com"] 
+ALLOWED_HOSTS = ["*"]
 TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID") 
+ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
 
 
 INSTALLED_APPS = [
@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "rest_framework",
     'django_filters',
     'drf_yasg',
+    'django_celery_beat',
 
     "app.shop",
     "app.settings",
