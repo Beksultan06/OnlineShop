@@ -7,6 +7,10 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from asgiref.sync import sync_to_async
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Подключаем Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
@@ -14,8 +18,8 @@ django.setup()
 
 from app.shop.models import Product, Order
 
-TOKEN = "8420115725:AAGhOwGmXk4S2GDO-MhEAU9tGtIhITiYpeE"
-ADMIN_CHAT_ID = 5199401134  # замените на свой ID
+TOKEN = os.getenv("TOKEN")
+ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()

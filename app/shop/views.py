@@ -5,13 +5,13 @@ from django.core.cache import cache
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework import status, mixins
-from datetime import time
+from datetime import time, timedelta
 from datetime import time as dt_time
 from decimal import Decimal
 from django.utils import timezone
 
 from app.shop.models import Product, Reviews, Contact, Category, ModelsProduct
-from app.shop.serializers import ProductSerializer, ReviewsSerializer, CheckoutCreateSerializer, ContactSerializers, CheckoutOrderSerializer, CategorySerializers, ModelsProductSerializers
+from app.shop.serializers import ProductSerializer, ReviewsSerializer, CheckoutCreateSerializer, ContactSerializers, CheckoutOrderSerializer, CategorySerializers, ModelsProductSerializers, CheckoutOrderSerializer
 from app.shop.filters import ProductFilter
 
 class CategoryAPI(viewsets.GenericViewSet,
@@ -102,6 +102,8 @@ class CartViewSet(viewsets.ViewSet):
     def add(self, request, pk=None):
         cart = request.session.get("cart", {})
         product = Product.objects.get(pk=pk)
+        image = product.images.first()
+        image_url = request.build_absolute_uri(image.image.url) if image else None
 
         if str(pk) in cart:
             cart[str(pk)]["quantity"] += 1
@@ -109,7 +111,8 @@ class CartViewSet(viewsets.ViewSet):
             cart[str(pk)] = {
                 "name": product.name,
                 "price": float(product.price),
-                "quantity": 1
+                "quantity": 1,
+                "image": image_url,
             }
 
         request.session["cart"] = cart

@@ -9,4 +9,4 @@ class ProductFilter(django_filters.FilterSet):
 
     class Meta:
         model = Product
-        fields = ['name', 'price', 'stock']  # только реальные поля модели
+        fields = ['name', 'price', 'stock'] 
