@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware", 
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -123,6 +124,15 @@ CACHES = {
         }
     }
 }
+
+FRONTEND_DIR = BASE_DIR / "dist"
+
+# index.html как шаблон
+TEMPLATES[0]['DIRS'] = [FRONTEND_DIR]
+
+# только ассеты Vite собираем в STATIC_ROOT
+STATICFILES_DIRS = [FRONTEND_DIR / "assets"]
+
 
 JAZZMIN_SETTINGS = {
     "site_title": "Мой магазин",
