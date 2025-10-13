@@ -10,9 +10,19 @@ from datetime import time as dt_time
 from decimal import Decimal
 from django.utils import timezone
 
-from app.shop.models import Product, Reviews, Contact
-from app.shop.serializers import ProductSerializer, ReviewsSerializer, CheckoutCreateSerializer, ContactSerializers
+from app.shop.models import Product, Reviews, Contact, Category, ModelsProduct
+from app.shop.serializers import ProductSerializer, ReviewsSerializer, CheckoutCreateSerializer, ContactSerializers, CheckoutOrderSerializer, CategorySerializers, ModelsProductSerializers
 from app.shop.filters import ProductFilter
+
+class CategoryAPI(viewsets.GenericViewSet,
+mixins.ListModelMixin):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializers
+
+class ModelsProductAPI(viewsets.GenericViewSet,
+mixins.ListModelMixin):
+    queryset = ModelsProduct.objects.all()
+    serializer_class = ModelsProductSerializers
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -65,25 +75,26 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 class FavoriteProductViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["post"])
     def toggle(self, request, pk=None):
+        if not request.session.session_key:
+            request.session.save()
         favorites = request.session.get("favorites", [])
-
-        if int(pk) in favorites:
-            favorites.remove(int(pk))
+        pk = int(pk)
+        if pk in favorites:
+            favorites.remove(pk)
             is_favorite = False
         else:
-            favorites.append(int(pk))
+            favorites.append(pk)
             is_favorite = True
-
         request.session["favorites"] = favorites
         request.session.modified = True
-
         return Response({"product_id": pk, "is_favorite": is_favorite})
 
-    def list(self, request):
-        favorites_ids = request.session.get("favorites", [])
-        queryset = Product.objects.filter(id__in=favorites_ids)
-        serializer = ProductSerializer(queryset, many=True, context={"request": request})
-        return Response(serializer.data)
+    def list(self, request, *args, **kwargs):
+        ids = request.session.get("favorites", [])
+        qs = Product.objects.filter(id__in=ids)
+        ser = ProductSerializer(qs, many=True, context={"request": request})
+        return Response(ser.data)
+
 
 
 class CartViewSet(viewsets.ViewSet):

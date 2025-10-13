@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from app.shop.models import Product, Order, ProductImage, Reviews, Category, CheckoutOrder, CheckoutItem, Contact
+from app.shop.models import Product, Order, ProductImage, Reviews, Category, CheckoutOrder, CheckoutItem, Contact, ModelsProduct
 from decimal import Decimal
 from datetime import timedelta, time as dt_time   
 from django.utils import timezone
@@ -16,6 +16,11 @@ class CategorySerializers(serializers.ModelSerializer):
         model = Category
         fields = ['id', 'name', 'is_active']
 
+class ModelsProductSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = ModelsProduct
+        fields = ['id', 'name', 'is_active']
+
 class ProductImageSerializer(serializers.ModelSerializer):    
     class Meta:
         model = ProductImage
@@ -25,10 +30,11 @@ class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, required=False)
     category = CategorySerializers(read_only=True)
     is_favorites = serializers.SerializerMethodField()
+    model = ModelsProductSerializers(read_only=True)
 
     class Meta:
         model = Product
-        fields = ["id", "name", "description", "price", "stock", "images", "rating", "is_favorites", "category"]
+        fields = ["id", "name", "description", "price", "stock", "images", "rating", "is_favorites", "category", 'total_sum', 'ckidka', 'model', 'description_product']
 
     def get_is_favorites(self, obj):
         request = self.context.get("request")

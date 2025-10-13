@@ -30,6 +30,22 @@ class Category(models.Model):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
     
+class ModelsProduct(models.Model):
+    name = models.CharField(
+        max_length=155,
+        verbose_name='Модели'
+    )
+    is_active = models.BooleanField(
+        default=False,
+        verbose_name='В наличий'
+    )
+    
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Модель'
+        verbose_name_plural = 'Модели'
 
 class Product(models.Model):
     category = models.ForeignKey(
@@ -38,6 +54,13 @@ class Product(models.Model):
         on_delete=models.SET_NULL,
         verbose_name='Категория',
         related_name='categories'
+    )
+    model_product = models.ForeignKey(
+        ModelsProduct,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Модели',
+        related_name='models'
     )
     name = models.CharField(
         max_length=255,
@@ -63,6 +86,17 @@ class Product(models.Model):
     is_favorites = models.BooleanField(
         default=False,
         verbose_name='В ИЗБРАННОЕ'
+    )
+    ckidka = models.CharField(
+        max_length=155,
+        verbose_name='Скидка'
+    )
+    total_sum = models.CharField(
+        max_length=155,
+        verbose_name='Общая цена'
+    )
+    description_product = RichTextField(
+        verbose_name='Описание продукта'
     )
 
     class Meta:

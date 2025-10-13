@@ -131,17 +131,30 @@ JAZZMIN_SETTINGS = {
     "welcome_sign": "Добро пожаловать в админку",
     "copyright": "Мой проект © 2025",
 }
+# куки должны работать для кросс-доменных XHR
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "None"
 
+# для SameSite=None браузеры требуют Secure
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# обязательно:
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "https://localhost:5173",          # если будете включать https на деве
+    "http://188.225.44.65",
+    "https://188.225.44.65",
+    "https://megamix.webtm.ru"
 ]
-
-if not DEBUG:
-    CORS_ALLOWED_ORIGINS += [
-        "https://myfrontend.com",
-        "https://www.myfrontend.com",
-    ]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "https://localhost:5173",
+    "http://188.225.44.65",
+    "https://188.225.44.65",
+    "https://megamix.webtm.ru"
+]
 
 CORS_ALLOW_METHODS = [
     "GET",
@@ -153,7 +166,6 @@ CORS_ALLOW_METHODS = [
     
 ]
 
-CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
     "authorization",
@@ -164,9 +176,6 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
-
-
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
 
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
