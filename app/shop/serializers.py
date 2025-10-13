@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from app.shop.models import Product, Order, ProductImage, Reviews, Category, CheckoutOrder, CheckoutItem, Contact
+from app.shop.models import Product,  ProductImage, Reviews, Category, CheckoutOrder, CheckoutItem, Contact
 from decimal import Decimal
 from datetime import timedelta, time as dt_time   
 from django.utils import timezone
@@ -13,6 +13,8 @@ class ContactSerializers(serializers.ModelSerializer):
 
 class CategorySerializers(serializers.ModelSerializer):
     class Meta:
+        logo = serializers.ImageField(required=False)
+        
         model = Category
         fields = ['id', 'name', 'is_active']
 

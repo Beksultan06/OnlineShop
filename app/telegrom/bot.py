@@ -7,15 +7,18 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from asgiref.sync import sync_to_async
+from app.shop.models import Product,Orders
 
 # Подключаем Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 django.setup()
 
 from app.shop.models import Product, Order
+from app.shop.utils import send_telegram_message  # твоя функция из utils.py
 
-TOKEN = "8420115725:AAGhOwGmXk4S2GDO-MhEAU9tGtIhITiYpeE"
-ADMIN_CHAT_ID = 5199401134  # замените на свой ID
+# Токен и chat_id
+TOKEN = os.getenv("TOKEN")
+ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -30,11 +33,12 @@ class OrderForm(StatesGroup):
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     await message.answer(
-        "👋 Привет! Я магазин OnlineShop 🛍️\nНапиши /products чтобы посмотреть товары."
+    
     )
 
-# Функция для показа товаров
-async def show_products(message: types.Message):
+# Команда /products — показать список товаров
+@dp.message(Command("products"))
+async def products_handler(message: types.Message):
     products = await sync_to_async(list)(Product.objects.all())
     if not products:
         await message.answer("Товаров пока нет 😔")
@@ -44,12 +48,7 @@ async def show_products(message: types.Message):
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="📄 Подробнее", callback_data=f"details_{product.id}")]
         ])
-        await message.answer(f"📦 {product.name}\n💰 {product.price}", reply_markup=keyboard)
-
-# Показ товаров командой /products
-@dp.message(Command("products"))
-async def products_handler(message: types.Message):
-    await show_products(message)
+        await message.answer(f"📦 {product.name}\n💰 {product.price} сом", reply_markup=keyboard)
 
 # Показ деталей товара
 @dp.callback_query(lambda c: c.data.startswith("details_"))
@@ -95,7 +94,7 @@ async def process_address(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
     product = await sync_to_async(Product.objects.get)(id=user_data["product_id"])
 
-    # Создание заказа
+    # Создание заказа в БД
     await sync_to_async(Order.objects.create)(
         product=product,
         quantity=1,
@@ -104,7 +103,7 @@ async def process_address(message: types.Message, state: FSMContext):
         user_address=message.text
     )
 
-    # Сообщение пользователю
+    # Сообщение клиенту
     await message.answer(
         f"✅ Ваш заказ оформлен!\n\n"
         f"📦 Товар: {product.name}\n"
@@ -112,23 +111,20 @@ async def process_address(message: types.Message, state: FSMContext):
         f"🧑‍💼 Имя: {user_data['user_name']}\n"
         f"📞 Телефон: {user_data['user_phone']}\n"
         f"🏠 Адрес: {message.text}\n\n"
-        f"Теперь вы можете просмотреть другие товары:"
+        f"Теперь вы можете просмотреть другие товары с помощью /products"
     )
 
-    # Показываем товары снова
-    await show_products(message)
-
-    # Уведомление админу
-    await bot.send_message(
-        ADMIN_CHAT_ID,
+    # Отправка уведомления админу в Telegram
+    text = (
         f"🆕 Новый заказ!\n"
         f"Товар: {product.name}\n"
         f"Цена: {product.price}\n"
         f"Имя: {user_data['user_name']}\n"
         f"Телефон: {user_data['user_phone']}\n"
         f"Адрес: {message.text}\n"
-        f"Пользователь: {message.from_user.full_name}"
+        f"Пользователь Telegram: {message.from_user.full_name}"
     )
+    await sync_to_async(send_telegram_message)(text)
 
     await state.clear()
 

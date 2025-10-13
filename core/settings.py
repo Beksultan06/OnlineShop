@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "app.shop",
     "app.settings",
     'ckeditor',
+    'app.telegrom',
 ]
 
 
