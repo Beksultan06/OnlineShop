@@ -1,1 +1,3 @@
 venv/
+# Ignore SQLite DB
+db.sqlite3
