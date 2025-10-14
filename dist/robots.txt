@@ -2,7 +2,6 @@ User-agent: *
 Allow: /
 
 # Закрыть служебные разделы, если есть
-Disallow: /admin
 Disallow: /api
 
 # Укажи карту сайта
