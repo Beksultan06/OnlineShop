@@ -42,7 +42,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             queryset = self.filter_queryset(self.get_queryset())
             serializer = self.get_serializer(queryset, many=True)
             products = serializer.data
-            cache.set(cache_key, products, timeout=60)
+            cache.set(cache_key, products, timeout=10)
 
         return Response(products)
 
