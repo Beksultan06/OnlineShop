@@ -1,7 +1,13 @@
+aiofiles==24.1.0
+aiogram==3.22.0
+aiohappyeyeballs==2.6.1
+aiohttp==3.12.15
+aiosignal==1.4.0
 amqp==5.3.1
 annotated-types==0.7.0
 asgiref==3.9.2
 async-timeout==5.0.1
+attrs==25.4.0
 billiard==4.2.2
 celery==5.5.3
 certifi==2025.10.5
@@ -24,13 +30,17 @@ django-redis==6.0.0
 django-timezone-field==7.1
 djangorestframework==3.16.1
 drf-yasg==1.21.11
+frozenlist==1.8.0
 gunicorn==23.0.0
 idna==3.10
 inflection==0.5.1
 kombu==5.5.4
+magic-filter==1.0.12
+multidict==6.7.0
 packaging==25.0
 pillow==11.3.0
 prompt_toolkit==3.0.52
+propcache==0.4.1
 pydantic==2.11.9
 pydantic_core==2.33.2
 python-crontab==3.3.0
@@ -51,3 +61,4 @@ urllib3==2.5.0
 vine==5.1.0
 wcwidth==0.2.14
 whitenoise==6.11.0
+yarl==1.22.0
