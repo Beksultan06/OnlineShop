@@ -6,134 +6,144 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ── БАЗОВОЕ ─────────────────────────────────────────────────────────────────────
+SECRET_KEY = os.getenv("SECRET_KEY")
+DEBUG = True  # В проде лучше False
 
-SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = True
+ALLOWED_HOSTS = [
+    "megamix24.com",
+    "www.megamix24.com",
+    "megamix.webtm.ru",
+    "188.225.44.65",
+    "localhost",
+    "127.0.0.1",
+]
 
-ALLOWED_HOSTS = ["*"]
+# ── ТЕЛЕГРАМ ───────────────────────────────────────────────────────────────────
 TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
 
-
+# ── APPS ───────────────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
     "jazzmin",
     "corsheaders",
     "modeltranslation",
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 
     "rest_framework",
-    'django_filters',
-    'drf_yasg',
-    'django_celery_beat',
+    "django_filters",
+    "drf_yasg",
+    "django_celery_beat",
 
     "app.shop",
     "app.settings",
-    'ckeditor',
+    "ckeditor",
 ]
 
-
+# ── MIDDLEWARE ─────────────────────────────────────────────────────────────────
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware", 
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",  # Должен быть самым верхним
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "app.analytics.middleware.VisitMiddleware",
 ]
 
-ROOT_URLCONF = 'core.urls'
+ROOT_URLCONF = "core.urls"
 
+# ── TEMPLATES ──────────────────────────────────────────────────────────────────
+FRONTEND_DIR = BASE_DIR / "dist"
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [FRONTEND_DIR],  # index.html от Vite
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'core.wsgi.application'
+WSGI_APPLICATION = "core.wsgi.application"
 
-
+# ── БД ─────────────────────────────────────────────────────────────────────────
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
-
+# ── DRF ────────────────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
     ],
 }
 
-
+# ── ПАРОЛИ ─────────────────────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# ── ЛОКАЛИ/ВРЕМЯ ───────────────────────────────────────────────────────────────
+LANGUAGE_CODE = "ru"
+LANGUAGES = [
+    ("ru", "Russian"),
+    ("en", "English"),
+]
+MODELTRANSLATION_DEFAULT_LANGUAGE = "ru"
 
-LANGUAGE_CODE = 'ru'
-TIME_ZONE = 'UTC'
+# Хранение в UTC, локаль — Азия/Бишкек (совпадает с Celery)
+TIME_ZONE = "Asia/Bishkek"
 USE_I18N = True
 USE_TZ = True
 
+# ── СТАТИКА/МЕДИА ──────────────────────────────────────────────────────────────
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "static"
+STATICFILES_DIRS = [FRONTEND_DIR / "assets"]  # ассеты Vite
 
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'static'
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
+# ── КЭШ ────────────────────────────────────────────────────────────────────────
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
 
-FRONTEND_DIR = BASE_DIR / "dist"
-
-# index.html как шаблон
-TEMPLATES[0]['DIRS'] = [FRONTEND_DIR]
-
-# только ассеты Vite собираем в STATIC_ROOT
-STATICFILES_DIRS = [FRONTEND_DIR / "assets"]
-
-
+# ── JAZZMIN ───────────────────────────────────────────────────────────────────
 JAZZMIN_SETTINGS = {
     "site_title": "Мой магазин",
     "site_header": "Панель управления",
@@ -141,41 +151,46 @@ JAZZMIN_SETTINGS = {
     "welcome_sign": "Добро пожаловать в админку",
     "copyright": "Мой проект © 2025",
 }
-# куки должны работать для кросс-доменных XHR
+
+# ── CORS/CSRF/COOKIES (КРОСС-ДОМЕН С КРЕДЕНШЛАМИ) ─────────────────────────────
+# Если фронт живёт на другом origin и вы шлёте куки/сессию, требуется:
+# 1) SameSite=None + Secure=True для обоих cookie
+# 2) CORS_ALLOW_CREDENTIALS=True и точные origins
+# 3) CSRF_TRUSTED_ORIGINS с теми же https-ориджинами, откуда идут POST
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
 
-# для SameSite=None браузеры требуют Secure
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# обязательно:
+# Оставляем по умолчанию HttpOnly=False для CSRF, чтобы фронт JS мог прочитать cookie
+# CSRF_COOKIE_HTTPONLY = False  # значение по умолчанию
+
 CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "https://localhost:5173",          # если будете включать https на деве
-    "http://188.225.44.65",
-    "https://188.225.44.65",
-    "https://megamix.webtm.ru"
-]
-CSRF_TRUSTED_ORIGINS = [
+    # прод-фронтенд
+    "https://megamix.webtm.ru",
+    # основной домен (если фронт тоже может стучаться отсюда)
+    "https://megamix24.com",
+    "https://www.megamix24.com",
+    # тест/локал
     "http://localhost:5173",
     "https://localhost:5173",
     "http://188.225.44.65",
     "https://188.225.44.65",
-    "https://megamix.webtm.ru"
 ]
 
-CORS_ALLOW_METHODS = [
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "OPTIONS",
-    
+# ВАЖНО: сюда нужно добавить ИМЕННО те origins, из которых браузер отправляет POST/PUT
+CSRF_TRUSTED_ORIGINS = [
+    "https://megamix24.com",
+    "https://www.megamix24.com",
+    "https://megamix.webtm.ru",
+    "https://188.225.44.65",
+    "https://localhost:5173",
 ]
 
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
 CORS_ALLOW_HEADERS = [
     "authorization",
@@ -183,10 +198,11 @@ CORS_ALLOW_HEADERS = [
     "accept",
     "origin",
     "user-agent",
-    "x-csrftoken",
+    "x-csrftoken",      
     "x-requested-with",
 ]
 
+# ── CELERY ─────────────────────────────────────────────────────────────────────
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
@@ -194,14 +210,6 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Bishkek"
 
-LANGUAGE_CODE = "ru"
-
-LANGUAGES = [
-    ("ru", "Russian"),
-    ("en", "English"),
-]
-
-MODELTRANSLATION_DEFAULT_LANGUAGE = "ru"
-
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
-SESSION_SAVE_EVERY_REQUEST = True 
+# ── СЕССИИ ─────────────────────────────────────────────────────────────────────
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 дней
+SESSION_SAVE_EVERY_REQUEST = True
