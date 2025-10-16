@@ -19,6 +19,9 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
+# Если сайт за прокси/NGINX с HTTPS — ОБЯЗАТЕЛЬНО указать этот заголовок
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # ── ТЕЛЕГРАМ ───────────────────────────────────────────────────────────────────
 TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
@@ -48,12 +51,12 @@ INSTALLED_APPS = [
 
 # ── MIDDLEWARE ─────────────────────────────────────────────────────────────────
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",  # Должен быть самым верхним
+    "corsheaders.middleware.CorsMiddleware",  # оставляем самым верхним
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",   # ← ВКЛЮЧАЕМ обратно CSRF
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -68,7 +71,7 @@ FRONTEND_DIR = BASE_DIR / "dist"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [FRONTEND_DIR],  # index.html от Vite
+        "DIRS": [FRONTEND_DIR],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -91,6 +94,7 @@ DATABASES = {
 }
 
 # ── DRF ────────────────────────────────────────────────────────────────────────
+# Оставляем SessionAuthentication (она требует CSRF) и TokenAuthentication
 REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
@@ -98,7 +102,7 @@ REST_FRAMEWORK = {
         "rest_framework.filters.OrderingFilter",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
+        "core.auth.CsrfExemptSessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
     ],
 }
@@ -113,13 +117,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # ── ЛОКАЛИ/ВРЕМЯ ───────────────────────────────────────────────────────────────
 LANGUAGE_CODE = "ru"
-LANGUAGES = [
-    ("ru", "Russian"),
-    ("en", "English"),
-]
+LANGUAGES = [("ru", "Russian"), ("en", "English")]
 MODELTRANSLATION_DEFAULT_LANGUAGE = "ru"
 
-# Хранение в UTC, локаль — Азия/Бишкек (совпадает с Celery)
 TIME_ZONE = "Asia/Bishkek"
 USE_I18N = True
 USE_TZ = True
@@ -127,7 +127,7 @@ USE_TZ = True
 # ── СТАТИКА/МЕДИА ──────────────────────────────────────────────────────────────
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "static"
-STATICFILES_DIRS = [FRONTEND_DIR / "assets"]  # ассеты Vite
+STATICFILES_DIRS = [FRONTEND_DIR / "assets"]
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -152,36 +152,30 @@ JAZZMIN_SETTINGS = {
     "copyright": "Мой проект © 2025",
 }
 
-# ── CORS/CSRF/COOKIES (КРОСС-ДОМЕН С КРЕДЕНШЛАМИ) ─────────────────────────────
-# Если фронт живёт на другом origin и вы шлёте куки/сессию, требуется:
-# 1) SameSite=None + Secure=True для обоих cookie
-# 2) CORS_ALLOW_CREDENTIALS=True и точные origins
-# 3) CSRF_TRUSTED_ORIGINS с теми же https-ориджинами, откуда идут POST
-SESSION_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_SAMESITE = "None"
+# ── CORS/CSRF/COOKIES ─────────────────────────────────────────────────────────
+# У тебя POST идёт с того же origin (megamix24.com) → SameSite="Lax" достаточно.
+# Если реально нужен cross-origin фронт (например, megamix.webtm.ru), верни "None".
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE   = "Lax"
 
 SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE    = True
 
-# Оставляем по умолчанию HttpOnly=False для CSRF, чтобы фронт JS мог прочитать cookie
-# CSRF_COOKIE_HTTPONLY = False  # значение по умолчанию
+# чтобы JS мог прочитать csrftoken и положить его в заголовок X-CSRFToken
+CSRF_COOKIE_HTTPONLY = False
 
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    # прод-фронтенд
     "https://megamix.webtm.ru",
-    # основной домен (если фронт тоже может стучаться отсюда)
     "https://megamix24.com",
     "https://www.megamix24.com",
-    # тест/локал
     "http://localhost:5173",
     "https://localhost:5173",
     "http://188.225.44.65",
     "https://188.225.44.65",
 ]
 
-# ВАЖНО: сюда нужно добавить ИМЕННО те origins, из которых браузер отправляет POST/PUT
 CSRF_TRUSTED_ORIGINS = [
     "https://megamix24.com",
     "https://www.megamix24.com",
@@ -198,7 +192,7 @@ CORS_ALLOW_HEADERS = [
     "accept",
     "origin",
     "user-agent",
-    "x-csrftoken",      
+    "x-csrftoken",
     "x-requested-with",
 ]
 

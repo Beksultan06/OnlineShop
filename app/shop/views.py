@@ -168,12 +168,14 @@ def compute_delivery_datetime(min_hours: int, preferred: time | None):
 
 def _compute_delivery_datetime(min_hours: int, preferred: dt_time | None):
     now = timezone.now()
-    earliest = now + timezone.timedelta(hours=min_hours)
+    earliest = now + timedelta(hours=min_hours)
     if not preferred:
         return earliest
-    candidate = earliest.replace(hour=preferred.hour, minute=preferred.minute, second=0, microsecond=0)
+    candidate = earliest.replace(
+        hour=preferred.hour, minute=preferred.minute, second=0, microsecond=0
+    )
     if candidate < earliest:
-        candidate += timezone.timedelta(days=1)
+        candidate += timedelta(days=1)
     return candidate
 
 class CheckoutView(APIView):
@@ -184,6 +186,9 @@ class CheckoutView(APIView):
 
         delivery_type = request.query_params.get("delivery_type", "standard")
         preferred_time_str = request.query_params.get("preferred_time")
+
+        product_ids = [int(pid) for pid in cart.keys()]
+        products = {p.id: p for p in Product.objects.filter(id__in=product_ids)}
 
         subtotal = Decimal("0")
         for it in cart.values():
@@ -214,6 +219,19 @@ class CheckoutView(APIView):
                 f"{base_note} Доставка назначена на {timezone.localtime(delivery_dt).strftime('%d.%m.%Y %H:%M')}."
             )
 
+        items = []
+        for pid_str, it in cart.items():
+            pid = int(pid_str)
+            product = products.get(pid)
+            items.append({
+                "name": it["name"],
+                "price": it["price"],
+                "quantity": it["quantity"],
+                "line_total": round(float(it["price"]) * int(it["quantity"]), 2),
+                "description_html": product.full_description_html if product else "",
+                "description_text": product.full_description_text if product else "",
+            })
+
         return Response({
             "preview": True,
             "delivery_type": delivery_type,
@@ -224,14 +242,7 @@ class CheckoutView(APIView):
             "subtotal": round(subtotal, 2),
             "shipping_cost": round(shipping_cost, 2),
             "total": round(total, 2),
-            "items": [
-                {
-                    "name": it["name"],
-                    "price": it["price"],
-                    "quantity": it["quantity"],
-                    "line_total": round(float(it["price"]) * int(it["quantity"]), 2),
-                } for it in cart.values()
-            ],
+            "items": items,
         })
 
     def post(self, request, *args, **kwargs):
@@ -242,6 +253,7 @@ class CheckoutView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
+        # ответ теперь включает items с описанием благодаря CheckoutOrderSerializer
         return Response(CheckoutOrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
 class ContactAPI(viewsets.GenericViewSet,

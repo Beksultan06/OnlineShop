@@ -65,20 +65,26 @@ class CheckoutItemReadSerializer(serializers.ModelSerializer):
         model = CheckoutItem
         fields = ("product", "product_name", "price", "quantity", "line_total")
 
+class CheckoutOrderItemSerializer(serializers.ModelSerializer):
+    description_html = serializers.CharField(source="product.full_description_html", read_only=True)
+    description_text = serializers.CharField(source="product.full_description_text", read_only=True)
+
+    class Meta:
+        model = CheckoutItem
+        fields = ["product", "price", "quantity", "line_total", "description_html", "description_text"]
 
 class CheckoutOrderSerializer(serializers.ModelSerializer):
-    items = CheckoutItemReadSerializer(many=True, read_only=True)
+    items = CheckoutOrderItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = CheckoutOrder
-        fields = (
+        fields = [
             "id", "first_name", "last_name", "email", "phone",
             "delivery_type", "country", "city", "address", "postcode",
             "note", "shipping_cost", "subtotal", "total",
             "delivery_eta_hours", "preferred_time", "delivery_datetime", "delivery_note",
-            "created_at", "items"
-        )
-
+            "created_at", "items",
+        ]
 
 class CheckoutCreateSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=100)
@@ -86,7 +92,7 @@ class CheckoutCreateSerializer(serializers.Serializer):
     email = serializers.EmailField()
     phone = serializers.CharField(max_length=20)
     delivery_type = serializers.ChoiceField(choices=CheckoutOrder.DELIVERY_CHOICES)
-    preferred_time = serializers.TimeField(required=False, allow_null=True) 
+    preferred_time = serializers.TimeField(required=False, allow_null=True)
     country = serializers.CharField(max_length=100)
     city = serializers.CharField(max_length=100)
     address = serializers.CharField(max_length=255)
@@ -184,6 +190,14 @@ class CheckoutCreateSerializer(serializers.Serializer):
                 )
                 for pid, price, qty, line_total in items_payload
             ])
+
+        # ---- Телеграм-сообщение: только название, модель, цена ----
+        delivery_title = (
+            order.get_delivery_type_display()
+            if hasattr(order, "get_delivery_type_display")
+            else order.delivery_type
+        )
+
         msg_lines = [
             f"🛒 <b>Новый заказ #{order.id}</b>",
             f"👤 {order.first_name} {order.last_name}",
@@ -192,21 +206,27 @@ class CheckoutCreateSerializer(serializers.Serializer):
             "",
             f"🏙️ {order.country}, {order.city}",
             f"📦 Адрес: {order.address}",
-            f"🚚 Тип доставки: {order.delivery_type}",
+            f"🚚 Тип доставки: {delivery_title}",
             f"⏰ {order.delivery_note}",
-            "",
-            "<b>Товары:</b>",
         ]
 
+        if order.note:
+            msg_lines += ["", f"📝 Примечание: {order.note}"]
+
+        msg_lines += ["", "<b>Товары:</b>"]
+
         for pid_str, it in cart.items():
-            msg_lines.append(
-                f"• {it['name']} — {it['quantity']} шт × {it['price']} ₽"
-            )
+            pid = int(pid_str)
+            product = products[pid]
+            model_name = getattr(product.model_product, "name", None)
+            title = f"{product.name} — {model_name}" if model_name else product.name
+            qty = it["quantity"]
+            unit_price = it["price"]
+            msg_lines.append(f"• {title} — {qty} шт × {unit_price} ₽")
 
-        msg_lines.append("")
-        msg_lines.append(f"💰 <b>Итого: {order.total} ₽</b>")
+        msg_lines += ["", f"💰 <b>Итого: {order.total} ₽</b>"]
 
-        send_telegram_message("\n".join(msg_lines))  
+        send_telegram_message("\n".join(msg_lines))
 
         if request is not None:
             request.session["cart"] = {}

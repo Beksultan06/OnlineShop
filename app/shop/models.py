@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.db.models import Sum, F
+from django.utils.html import strip_tags
 from datetime import timedelta
 from ckeditor.fields import RichTextField
 import uuid
@@ -106,6 +107,21 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def full_description_html(self) -> str:
+        """
+        Полное HTML-описание для показа на сайте.
+        Приоритет: description_product → description.
+        """
+        return (self.description_product or self.description or "").strip()
+
+    @property
+    def full_description_text(self) -> str:
+        """
+        Текст без HTML — безопасно для Телеграма/логов.
+        """
+        return strip_tags(self.full_description_html)
 
 
 class ProductImage(models.Model):
