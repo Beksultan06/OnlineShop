@@ -15,7 +15,7 @@ ALLOWED_HOSTS = [
     "www.megamix24.com",
     "megamix.webtm.ru",
     "188.225.44.65",
-    "localhost",
+    "localhost:5173",
     "127.0.0.1",
 ]
 
@@ -167,7 +167,6 @@ CSRF_COOKIE_HTTPONLY = False
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "https://megamix.webtm.ru",
     "https://megamix24.com",
     "https://www.megamix24.com",
     "http://localhost:5173",

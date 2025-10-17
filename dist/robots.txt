@@ -1,8 +1,0 @@
-User-agent: *
-Allow: /
-
-# Закрыть служебные разделы, если есть
-Disallow: /api
-
-# Укажи карту сайта
-Sitemap: https://megamix24.com/
