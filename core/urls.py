@@ -31,15 +31,15 @@ DIST_DIR = Path(settings.BASE_DIR) / "dist"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
+    path('api/v1/shop/',     include('app.shop.urls')),
+    path('api/v1/settings/', include('app.settings.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/',   schema_view.with_ui('redoc',   cache_timeout=0), name='schema-redoc'),
 ]
 
 # i18n API маршруты
 urlpatterns += i18n_patterns(
-    path('api/v1/shop/',     include('app.shop.urls')),
-    path('api/v1/settings/', include('app.settings.urls')),
+    
 )
 
 # Статика и медиа в DEBUG (helper добавляет только при DEBUG=True)
