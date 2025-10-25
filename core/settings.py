@@ -134,15 +134,6 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ── КЭШ ────────────────────────────────────────────────────────────────────────
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
-    }
-}
-
 # ── JAZZMIN ───────────────────────────────────────────────────────────────────
 JAZZMIN_SETTINGS = {
     "site_title": "Мой магазин",

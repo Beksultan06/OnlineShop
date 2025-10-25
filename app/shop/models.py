@@ -126,7 +126,7 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(
-        Product,
+        "shop.Product",
         on_delete=models.CASCADE,
         related_name="images",
         verbose_name="Товар"
@@ -142,6 +142,27 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Изображение для {self.product.name}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.image:
+            img_path = self.image.path
+            img = Image.open(img_path)
+
+            if img.format != "WEBP":
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+
+                buffer = BytesIO()
+                img.save(buffer, format="WEBP", quality=85)
+                buffer.seek(0)
+
+                webp_name = f"{self.image.name.rsplit('.', 1)[0]}.webp"
+                self.image.save(webp_name, ContentFile(buffer.read()), save=False)
+
+                buffer.close()
+                super().save(*args, **kwargs)
 
 class Reviews(models.Model):
     title = models.CharField(

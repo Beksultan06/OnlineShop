@@ -1,26 +1,32 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status, mixins
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
-from django.core.cache import cache
 from rest_framework.decorators import action
 from rest_framework.views import APIView
-from rest_framework import status, mixins
-from datetime import time, timedelta
-from datetime import time as dt_time
+from django_filters.rest_framework import DjangoFilterBackend
+from datetime import timedelta, time as dt_time
 from decimal import Decimal
 from django.utils import timezone
+import random
 
 from app.shop.models import Product, Reviews, Contact, Category, ModelsProduct
-from app.shop.serializers import ProductSerializer, ReviewsSerializer, CheckoutCreateSerializer, ContactSerializers, CheckoutOrderSerializer, CategorySerializers, ModelsProductSerializers, CheckoutOrderSerializer
+from app.shop.serializers import (
+    ProductSerializer,
+    ReviewsSerializer,
+    CheckoutCreateSerializer,
+    ContactSerializers,
+    CheckoutOrderSerializer,
+    CategorySerializers,
+    ModelsProductSerializers,
+)
 from app.shop.filters import ProductFilter
 
-class CategoryAPI(viewsets.GenericViewSet,
-mixins.ListModelMixin):
+
+class CategoryAPI(viewsets.GenericViewSet, mixins.ListModelMixin):
     queryset = Category.objects.all()
     serializer_class = CategorySerializers
 
-class ModelsProductAPI(viewsets.GenericViewSet,
-mixins.ListModelMixin):
+
+class ModelsProductAPI(viewsets.GenericViewSet, mixins.ListModelMixin):
     queryset = ModelsProduct.objects.all()
     serializer_class = ModelsProductSerializers
 
@@ -35,30 +41,19 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ["price"]
 
     def list(self, request, *args, **kwargs):
-        cache_key = "products_list"
-        products = cache.get(cache_key)
-
-        if not products:
-            queryset = self.filter_queryset(self.get_queryset())
-            serializer = self.get_serializer(queryset, many=True)
-            products = serializer.data
-            cache.set(cache_key, products, timeout=10)
-
-        return Response(products)
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.order_by("?")
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
-        product = serializer.save()
-        cache.delete("products_list")
-        return product
+        return serializer.save()
 
     def perform_update(self, serializer):
-        product = serializer.save()
-        cache.delete("products_list")
-        return product
+        return serializer.save()
 
     def perform_destroy(self, instance):
         instance.delete()
-        cache.delete("products_list")
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
@@ -96,7 +91,7 @@ class FavoriteProductViewSet(viewsets.ViewSet):
         return Response(ser.data)
 
 
-
+# ------------------- CART -------------------
 class CartViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["post"])
     def add(self, request, pk=None):
@@ -149,22 +144,9 @@ class CartViewSet(viewsets.ViewSet):
         return {
             "items": cart,
             "total_price": round(total, 2),
-            "total_items": sum(item["quantity"] for item in cart.values())
+            "total_items": sum(item["quantity"] for item in cart.values()),
         }
 
-def compute_delivery_datetime(min_hours: int, preferred: time | None):
-    now = timezone.now()
-    earliest = now + timedelta(hours=min_hours)
-
-    if not preferred:
-        return earliest
-
-    candidate = earliest.replace(
-        hour=preferred.hour, minute=preferred.minute, second=0, microsecond=0
-    )
-    if candidate < earliest:
-        candidate += timedelta(days=1)
-    return candidate
 
 def _compute_delivery_datetime(min_hours: int, preferred: dt_time | None):
     now = timezone.now()
@@ -177,6 +159,7 @@ def _compute_delivery_datetime(min_hours: int, preferred: dt_time | None):
     if candidate < earliest:
         candidate += timedelta(days=1)
     return candidate
+
 
 class CheckoutView(APIView):
     def get(self, request, *args, **kwargs):
@@ -253,10 +236,9 @@ class CheckoutView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
-        # ответ теперь включает items с описанием благодаря CheckoutOrderSerializer
         return Response(CheckoutOrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
-class ContactAPI(viewsets.GenericViewSet,
-                    mixins.CreateModelMixin):
+
+class ContactAPI(viewsets.GenericViewSet, mixins.CreateModelMixin):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializers
